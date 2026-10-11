@@ -1,0 +1,73 @@
+{
+  "info": {
+    "name": "Fastor CRM API",
+    "description": "Employee auth, public enquiry form and lead claiming. Run Register or Login first; the token is saved automatically.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "token", "value": "" },
+    { "key": "enquiryId", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "1. Register employee",
+      "event": [
+        { "listen": "test", "script": { "exec": ["const r = pm.response.json();", "if (r.data && r.data.token) pm.collectionVariables.set('token', r.data.token);"] } }
+      ],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Asha\",\n  \"email\": \"asha@fastor.com\",\n  \"password\": \"secret123\"\n}" },
+        "url": "{{baseUrl}}/auth/register"
+      }
+    },
+    {
+      "name": "2. Login employee",
+      "event": [
+        { "listen": "test", "script": { "exec": ["const r = pm.response.json();", "if (r.data && r.data.token) pm.collectionVariables.set('token', r.data.token);"] } }
+      ],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"asha@fastor.com\",\n  \"password\": \"secret123\"\n}" },
+        "url": "{{baseUrl}}/auth/login"
+      }
+    },
+    {
+      "name": "3. Submit enquiry (public, no auth)",
+      "event": [
+        { "listen": "test", "script": { "exec": ["const r = pm.response.json();", "if (r.data && r.data.enquiry) pm.collectionVariables.set('enquiryId', r.data.enquiry.id);"] } }
+      ],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Riya Sharma\",\n  \"email\": \"riya@example.com\",\n  \"phone\": \"+91 98765 43210\",\n  \"courseInterest\": \"Full Stack Web Development\",\n  \"message\": \"Weekend batch?\"\n}" },
+        "url": "{{baseUrl}}/enquiries/public"
+      }
+    },
+    {
+      "name": "4. Unclaimed leads",
+      "request": { "method": "GET", "url": "{{baseUrl}}/enquiries/public?page=1&limit=20" }
+    },
+    {
+      "name": "5. Claim lead",
+      "request": { "method": "PATCH", "url": "{{baseUrl}}/enquiries/{{enquiryId}}/claim" }
+    },
+    {
+      "name": "6. My claimed leads",
+      "request": { "method": "GET", "url": "{{baseUrl}}/enquiries/private?page=1&limit=20" }
+    },
+    {
+      "name": "Me (logged-in employee)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/auth/me" }
+    }
+  ]
+}
